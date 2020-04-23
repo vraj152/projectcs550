@@ -2,13 +2,13 @@ import content_based_recsys
 import pandas as pd
 import math
 
+training_data = pd.read_csv(r'data/trainingData.csv')
+movie_data = pd.read_csv(r'data/movieWithVector.csv')
+pantomath = pd.merge(training_data, movie_data, on="movieId")
+
+pantomath.to_csv(r'data/pantomath.csv', index=False)
+
 def buildUserProfile(userInput):
-    training_data = pd.read_csv(r'data/trainingData.csv')
-    movie_data = pd.read_csv(r'data/movieWithVector.csv')
-    pantomath = pd.merge(training_data, movie_data, on="movieId")
-
-    pantomath.to_csv(r'data/pantomath.csv', index=False)
-
     rated_movies = pantomath.loc[pantomath['userId'] == int(userInput)]
 
     user_mean_rating = round(rated_movies["rating"].mean(), 2)
@@ -35,18 +35,29 @@ def buildUserProfile(userInput):
 
     return weight_list
 
-user_Id = input("Enter User Id:")
-itemProfile = r'data/itemProfile.csv'
-weightList = buildUserProfile(user_Id)
-cosine_distances = content_based_recsys.computeSimilarity(itemProfile, weightList)
-print("Recommendations to user: ", user_Id)
-count = 1
-for key, value in cosine_distances.items():
-    if (count < 20):
-        print("Movie with ID: %d with similarity %f" % (key, value))
-        count = count + 1
-    else:
-        break
+def take_userInput(user_Id):
+    recemmendations = []
+    itemProfile = r'data/itemProfile.csv'
+    movies = pd.read_csv(r'data/movies.csv')
+    
+    weightList = buildUserProfile(user_Id)
+    cosine_distances = content_based_recsys.computeSimilarity(itemProfile, weightList)
+    count = 1
+    
+    for key, value in cosine_distances.items():
+        if (count < 11):
+            temp_dict = {}
+            temp_dict['Index'] = count
+            temp_dict['MovieName'] = str(getMovieName(movies, key))
+            temp_dict['MovieID'] = key
+            temp_dict['Similarity'] = value
+            count = count + 1
+            
+            recemmendations.append(temp_dict)
+        else:
+            break
+    return recemmendations
 
-
-
+def getMovieName(movies, movieId):
+    data = movies.loc[movies['movieId'] == movieId]
+    return (data.iloc[0]['title'])

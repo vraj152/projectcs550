@@ -2,13 +2,11 @@ import pandas as pd
 import content_based_recsys
 import math
 
-
 # Function to create predictedRatingTestData file which contains user, movieId, predictedRating and givenRating
 def createPredictedFile(user, movieId, predictValue, givenRating, predictedRatingTestData):
     row = [{'user': user, 'movieId': movieId, 'predictedRating': predictValue, 'actualRating': givenRating}]
     predictedRatingTestData = predictedRatingTestData.append(row, ignore_index = True, sort = False)
     return predictedRatingTestData
-
 
 # Function to predict the movie ratings by using knn algorithm
 def predict(cosineDistances, user):
@@ -56,17 +54,15 @@ trainingData = pd.read_csv(r'data/trainingData.csv')
 
 testData = pd.read_csv(r'data/testingData.csv')
 allUsers = testData['userId'].unique()
-
+itemProfile = pd.read_csv(r'data/itemProfile.csv')
+fileCol = itemProfile.columns
 predictedList = []
 
 cols = ["user", "movieId", "predictedRating", "actualRating"]
 predictedRatingTestData = pd.DataFrame(columns = cols)
 
 for user in allUsers:
-    itemProfile = pd.read_csv(r'data/itemProfile.csv')
-    fileCol = itemProfile.columns
     userFile = pd.DataFrame(columns = fileCol)
-
     userTrainFile = pd.DataFrame(columns = fileCol)
 
     #Create file for test data
@@ -100,4 +96,3 @@ for user in allUsers:
 
 predictedRatingTestData = rmse(predictedList, predictedRatingTestData)
 predictedRatingTestData.to_csv(r'data/predictedRatingTestData.csv', index=False)
-
